@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Clue Player
+Comment=Moderated Safe App
+Exec=clue_player
+Icon=clue_player
+Categories=Utility;Education;
+Terminal=false

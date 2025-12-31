@@ -1,0 +1,72 @@
+name: Clue Player Factory
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build Clue Player (Linux)
+    runs-on: ubuntu-22.04 # Standard Stable Linux
+    
+    steps:
+      # 1. CHECKOUT CODE
+      - uses: actions/checkout@v4
+
+      # 2. INSTALL HEAVY LIBRARIES (So your laptop doesn't have to)
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libmpv-dev mpv ffmpeg ninja-build libgtk-3-dev curl wget
+
+      # 3. SETUP FLUTTER
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          architecture: x64
+      
+      # 4. GET DEPENDENCIES
+      - name: Install App Dependencies
+        run: flutter pub get
+
+      # 5. BUILD THE BINARY
+      - name: Build Linux Release
+        run: flutter build linux --release
+
+      # 6. PACKAGE INTO APPIMAGE (The "Can")
+      - name: Package AppImage
+        run: |
+          # Create AppDir structure
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/icons/hicolor/512x512/apps
+          mkdir -p AppDir/usr/share/applications
+
+          # Copy Binary
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
+          
+          # Download Tools (yt-dlp) so user doesn't need to install them
+          wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O AppDir/usr/bin/yt-dlp
+          chmod +x AppDir/usr/bin/yt-dlp
+
+          # Copy Assets (You must create these in your project!)
+          cp assets/logo.png AppDir/usr/share/icons/hicolor/512x512/apps/clue_player.png
+          cp assets/clue_player.desktop AppDir/usr/share/applications/clue_player.desktop
+
+          # Use LinuxDeploy to seal the can
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          
+          # Initialize AppImage
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage \
+            --desktop-file AppDir/usr/share/applications/clue_player.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/clue_player.png \
+            --executable AppDir/usr/bin/clue_player
+
+      # 7. UPLOAD THE RESULT
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CluePlayer-Linux-AppImage
+          path: *.AppImage
