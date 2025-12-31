@@ -40,6 +40,7 @@ class VideoModel {
       thumbnailUrl: json['thumbnail'] ?? '',
       url: json['webpage_url'] ?? '',
       platform: json['extractor'] ?? 'unknown',
+      isCompleted: json['isCompleted'] ?? false,
     );
   }
 }
