@@ -2,15 +2,76 @@
 // FILE: lib/screens/dashboard_screen.dart
 // ==========================================
 
+import 'package:clue_player/widgets/batch_card.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../widgets/batch_card.dart';
 
-class DashboardScreen extends StatelessWidget {
+import '../data/mock_data.dart';
+import '../video_model.dart'; // IMPORT THE DATA MODEL
+import '../yt_service.dart'; // IMPORT THE ENGINE
+
+class DashboardScreen extends StatefulWidget {
   final String title;
   final String filterType; // 'ALL', 'LEARN', 'CHILL', 'PRIVATE'
 
-  const DashboardScreen({super.key, required this.title, this.filterType = 'ALL'});
+  const DashboardScreen(
+      {super.key, required this.title, this.filterType = 'ALL'});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final YtService _ytService = YtService(); // START THE ENGINE
+
+  // Use MockData for the video list
+  bool _isLoading = false;
+  // ignore: unused_field
+  String _statusMsg = "";
+  // Store the real video results here (search), or use mock data for initial/default display
+  List<VideoModel> _realVideos = [];
+  final List<Map<String, dynamic>> _mockVideos = MockData.videos;
+
+  // 1. THE SEARCH LOGIC
+  Future<void> _handleSearch(String query) async {
+    if (query.isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+      _statusMsg = "Scanning Secure Channels...";
+    });
+
+    try {
+      // CALL THE SERVICE
+      final results = await _ytService.searchOrFetch(query);
+
+      setState(() {
+        _realVideos = results;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _statusMsg = "Connection Failed: $e";
+        _isLoading = false;
+      });
+    }
+  }
+
+  // 2. THE DOWNLOAD LOGIC
+  void _triggerDownload(VideoModel video) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Initializing Secure Download: ${video.title}")));
+
+    // START DOWNLOAD IN BACKGROUND
+    _ytService.downloadVideo(video, (log) {
+      // TODO: Replace with logging framework in production
+      // print("LOG: $log");
+    }).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("✅ Asset Secured in Vault"),
+          backgroundColor: Colors.green));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,178 +79,100 @@ class DashboardScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF121212),
       body: CustomScrollView(
         slivers: [
-          // 1. TOP BAR (Search & Profile)
+          // --- TOP BAR ---
           SliverToBoxAdapter(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
               child: Row(
                 children: [
                   Expanded(
                     child: Container(
-                      height: 40,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF333333)),
                       ),
                       child: TextField(
+                        controller: _searchController,
+                        onSubmitted: _handleSearch,
+                        style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.search, color: Colors.grey[600], size: 20),
-                          hintText: "Search your vault...",
-                          hintStyle: TextStyle(color: Colors.grey[600], fontSize: 13),
+                          prefixIcon: Icon(Icons.search,
+                              color: widget.filterType == 'PRIVATE'
+                                  ? Colors.red
+                                  : const Color(0xFF00AAFF)),
+                          hintText: "Search global or offline diary...",
+                          hintStyle: TextStyle(color: Colors.grey[600]),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.only(top: 8),
+                          contentPadding: const EdgeInsets.only(top: 12),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 24),
-                  IconButton(onPressed: (){}, icon: Icon(Icons.notifications, color: Colors.grey[400])),
-                  const SizedBox(width: 16),
-                  const CircleAvatar(
-                    backgroundColor: Color(0xFF00AAFF),
-                    radius: 16,
-                    child: Text("NG", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
+                  if (_isLoading)
+                    const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Color(0xFF00AAFF))),
                 ],
               ),
             ),
           ),
 
-          // 2. HERO BANNER
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0D47A1), Color(0xFF1976D2)], // Deep Blue Gradient
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: NetworkImage("https://www.transparenttextures.com/patterns/cubes.png"), // Subtle pattern
-                  opacity: 0.1,
-                  repeat: ImageRepeat.repeat,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      "A curated sanctuary of videos for deep learning or pure relaxation.\nSafe, secure, and ready for you.",
-                      style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 3. FILTER PILLS
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              child: Row(
-                children: [
-                  Text("Your Vault", style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                  const Spacer(),
-                  _buildFilterChip("All", true),
-                  _buildFilterChip("Downloaded", false),
-                  _buildFilterChip("Expiring Soon", false),
-                  _buildFilterChip("Expired", false),
-                ],
-              ),
-            ),
-          ),
-
-          // 4. VIDEO GRID
+          // --- GRID RESULTS ---
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 350, // Responsive Card Width
-                mainAxisExtent: 320, // Card Height
+                maxCrossAxisExtent: 350,
+                mainAxisExtent: 380, // FIX OVERFLOW
                 crossAxisSpacing: 24,
                 mainAxisSpacing: 24,
               ),
-              delegate: SliverChildListDelegate([
-                // MOCK DATA MATCHING IMAGE
-                BatchVideoCard(
-                  title: "Midnight Lo-Fi Radio - Beats to...",
-                  description: "A soothing collection of beats perfect for late night...",
-                  duration: "24:00",
-                  fileSize: "128 MB",
-                  thumbnailUrl: "https://f4.bcbits.com/img/a1962363222_65", // Mock
-                  category: "CHILLING",
-                  status: "READY",
-                  daysLeft: 30,
-                  onAction: () {},
-                ),
-                BatchVideoCard(
-                  title: "Advanced React Hooks Patterns",
-                  description: "Master useEffect and useMemo with these...",
-                  duration: "15:45",
-                  fileSize: "0 MB",
-                  thumbnailUrl: "https://reactjs.org/logo-og.png",
-                  category: "LEARNING",
-                  status: "READY",
-                  daysLeft: 28,
-                  onAction: () {},
-                ),
-                BatchVideoCard(
-                  title: "4K Forest Ambience Soundscape",
-                  description: "Immersive nature sounds for deep focus or sleep...",
-                  duration: "60:00",
-                  fileSize: "500 MB",
-                  thumbnailUrl: "https://img.youtube.com/vi/xNN7iTA57jM/maxresdefault.jpg",
-                  category: "NATURE",
-                  status: "EXPIRED",
-                  onAction: () {},
-                ),
-                if (filterType == 'PRIVATE' || filterType == 'ALL')
-                BatchVideoCard(
-                  title: "Team Strategy Session Recording",
-                  description: "Confidential internal meeting discussing Q4...",
-                  duration: "08:20",
-                  fileSize: "45 MB",
-                  thumbnailUrl: "", // Empty for lock icon
-                  category: "PRIVATE",
-                  status: "LOCKED",
-                  onAction: () {},
-                ),
-              ]),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  // If search results exist, show them; otherwise, show mock data
+                  if (_realVideos.isNotEmpty) {
+                    final vid = _realVideos[index];
+                    return BatchVideoCard(
+                      title: vid.title,
+                      description: vid.channel, // Use channel as desc
+                      duration: vid.duration,
+                      fileSize: "Unknown", // Metadata doesn't always give size
+                      thumbnailUrl: vid.thumbnailUrl,
+                      category: widget.filterType == 'ALL'
+                          ? 'General'
+                          : widget.filterType,
+                      status: "READY",
+                      onAction: () => _triggerDownload(vid), id: '', onFavoriteToggle: () {  }, // WIRE THE BUTTON
+                    );
+                  } else {
+                    final mock = _mockVideos[index];
+                    return BatchVideoCard(
+                      title: mock['title'],
+                      description: mock['channel'],
+                      duration: mock['duration'],
+                      fileSize: mock['size'] ?? 'Unknown',
+                      thumbnailUrl: mock['thumbnailUrl'],
+                      category: mock['category'] ?? 'General',
+                      status: mock['status'] ?? 'READY',
+                      onAction: () {
+                        // Optionally, convert to VideoModel if needed for download
+                        // _triggerDownload(VideoModel.fromMap(mock));
+                      }, id: '', onFavoriteToggle: () {  },
+                    );
+                  }
+                },
+                childCount: _realVideos.isNotEmpty
+                    ? _realVideos.length
+                    : _mockVideos.length,
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      margin: const EdgeInsets.only(left: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF00AAFF) : const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.grey[500],
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }

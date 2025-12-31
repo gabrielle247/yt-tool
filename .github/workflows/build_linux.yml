@@ -67,4 +67,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CluePlayer-Linux-AppImage
-          path: *.AppImage
+          path: "*.AppImage"

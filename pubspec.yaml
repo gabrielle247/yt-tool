@@ -20,9 +20,15 @@ dependencies:
   media_kit_libs_video: ^1.0.4 
   
   # Utilities
-  path_provider: ^2.1.2
+  path_provider: ^2.1.5
   transparent_image: ^2.0.1
   intl: ^0.19.0
+  drift_dev: ^2.30.0
+  build_runner: ^2.10.4
+  sqlite3: ^2.9.4
+  drift: ^2.30.0
+  path: ^1.9.1
+  sqlite3_flutter_libs: ^0.5.41
 
 dev_dependencies:
   flutter_test:
@@ -33,3 +39,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/clue_player.desktop
+    - assets/images/empty_state.png
+    - assets/images/logo.png
+    - assets/images/noise_texture.jpg
+    - assets/images/thumbnail_placeholder.jpg
