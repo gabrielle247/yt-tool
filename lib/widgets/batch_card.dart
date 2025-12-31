@@ -58,11 +58,13 @@ class BatchVideoCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: Image.network(
-                    thumbnailUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, o, s) => Container(color: Colors.grey[900]),
-                  ),
+                  child: thumbnailUrl.isNotEmpty 
+                    ? Image.network(
+                        thumbnailUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, o, s) => Container(color: Colors.grey[900]),
+                      )
+                    : Container(color: Colors.grey[900]), // Placeholder for empty thumbnail
                 ),
               ),
               // Category Tag
@@ -121,6 +123,44 @@ class BatchVideoCard extends StatelessWidget {
                           )
                         ],
                       ),
+                    ),
+                  ),
+                ),
+              // Download Progress
+              if (status == 'DOWNLOADING')
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(100),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.download, color: Colors.white, size: 32),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Downloading...",
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          width: 100,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: progress ?? 0.0,
+                              backgroundColor: Colors.grey[700],
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00AAFF)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -213,6 +253,10 @@ class BatchVideoCard extends StatelessWidget {
       label = "Unlock";
       icon = Icons.lock_open;
       btnColor = Colors.grey;
+    } else if (status == 'DOWNLOADING') {
+      label = "Cancel";
+      icon = Icons.cancel;
+      btnColor = Colors.orange;
     }
 
     return InkWell(
