@@ -261,7 +261,7 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   ),
   
   // Bottom Navigation Bar
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+  bottomNavigationBarTheme: const BottomNavigationBarThemeData(
     backgroundColor: AppColors.surface,
     selectedItemColor: AppColors.primary,
     unselectedItemColor: AppColors.onSurfaceVariant,
@@ -270,7 +270,7 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   ),
   
   // Card
-  cardTheme: CardTheme(
+  cardTheme: const CardThemeData(
     color: AppColors.surfaceCard,
     elevation: 1.0,
     shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.md),
@@ -278,10 +278,10 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   ),
   
   // Dialog
-  dialogTheme: DialogTheme(
+  dialogTheme:  DialogThemeData(
     backgroundColor: AppColors.surface,
     elevation: 24.0,
-    shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.lg),
+    shape: const RoundedRectangleBorder(borderRadius: AppBorderRadius.lg),
     titleTextStyle: AppTypography.titleLarge.copyWith(color: AppColors.onSurface),
     contentTextStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
   ),
@@ -290,25 +290,25 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: AppColors.surfaceVariant.withAlpha(102), // Changed from .withOpacity(0.4) to .withAlpha(102)
-    border: OutlineInputBorder(
+    border: const OutlineInputBorder(
       borderRadius: AppBorderRadius.sm,
       borderSide: BorderSide.none,
     ),
-    enabledBorder: OutlineInputBorder(
+    enabledBorder: const OutlineInputBorder(
       borderRadius: AppBorderRadius.sm,
       borderSide: BorderSide.none,
     ),
-    focusedBorder: OutlineInputBorder(
+    focusedBorder: const OutlineInputBorder(
       borderRadius: AppBorderRadius.sm,
-      borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
+      borderSide: BorderSide(color: AppColors.primary, width: 2.0),
     ),
-    errorBorder: OutlineInputBorder(
+    errorBorder: const OutlineInputBorder(
       borderRadius: AppBorderRadius.sm,
-      borderSide: const BorderSide(color: AppColors.error, width: 1.0),
+      borderSide: BorderSide(color: AppColors.error, width: 1.0),
     ),
-    focusedErrorBorder: OutlineInputBorder(
+    focusedErrorBorder: const OutlineInputBorder(
       borderRadius: AppBorderRadius.sm,
-      borderSide: const BorderSide(color: AppColors.error, width: 2.0),
+      borderSide: BorderSide(color: AppColors.error, width: 2.0),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
     hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurfaceVariant),
@@ -326,7 +326,7 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
       elevation: 0,
       padding: AppSpacing.buttonPadding,
       textStyle: AppTypography.labelLarge,
-      shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
+      shape: const RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
       minimumSize: const Size(64.0, 48.0),
     ),
   ),
@@ -338,7 +338,7 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
       side: BorderSide(color: AppColors.primary.withAlpha(153)), // Changed from .withOpacity(0.6) to .withAlpha(153)
       padding: AppSpacing.buttonPadding,
       textStyle: AppTypography.labelLarge,
-      shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
+      shape: const RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
       minimumSize: const Size(64.0, 48.0),
     ),
   ),
@@ -349,7 +349,7 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
       disabledForegroundColor: AppColors.disabled,
       padding: AppSpacing.buttonPadding,
       textStyle: AppTypography.labelLarge,
-      shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
+      shape: const RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
       minimumSize: const Size(64.0, 48.0),
     ),
   ),
@@ -377,13 +377,13 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   snackBarTheme: SnackBarThemeData(
     backgroundColor: AppColors.surface,
     contentTextStyle: AppTypography.bodyMedium.copyWith(color: AppColors.onSurface),
-    shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
+    shape: const RoundedRectangleBorder(borderRadius: AppBorderRadius.sm),
     behavior: SnackBarBehavior.floating,
     elevation: 6.0,
   ),
   
   // Progress Indicators
-  progressIndicatorTheme: ProgressIndicatorThemeData(
+  progressIndicatorTheme: const ProgressIndicatorThemeData(
     linearTrackColor: AppColors.surfaceVariant,
     color: AppColors.primary,
   ),
@@ -409,14 +409,14 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   ),
   
   // Tab Bar
-  tabBarTheme: TabBarTheme(
+  tabBarTheme: TabBarThemeData(
     labelColor: AppColors.primary,
     unselectedLabelColor: AppColors.onSurfaceVariant,
     labelStyle: AppTypography.labelLarge,
     unselectedLabelStyle: AppTypography.labelLarge,
-    indicator: UnderlineTabIndicator(
-      borderSide: const BorderSide(width: 2.0, color: AppColors.primary),
-      insets: const EdgeInsets.symmetric(horizontal: 16.0),
+    indicator: const UnderlineTabIndicator(
+      borderSide: BorderSide(width: 2.0, color: AppColors.primary),
+      insets: EdgeInsets.symmetric(horizontal: 16.0),
     ),
     indicatorSize: TabBarIndicatorSize.tab,
     overlayColor: WidgetStateProperty.all(AppColors.hover),
@@ -447,11 +447,11 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   ),
   
   // Floating Action Button
-  floatingActionButtonTheme: FloatingActionButtonThemeData(
+  floatingActionButtonTheme: const FloatingActionButtonThemeData(
     backgroundColor: AppColors.primary,
     foregroundColor: AppColors.onPrimary,
     shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.lg),
-    sizeConstraints: const BoxConstraints(minWidth: 56.0, minHeight: 56.0),
+    sizeConstraints: BoxConstraints(minWidth: 56.0, minHeight: 56.0),
   ),
 );
 
