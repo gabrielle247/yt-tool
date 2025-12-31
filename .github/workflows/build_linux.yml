@@ -8,13 +8,13 @@ on:
 jobs:
   build-linux:
     name: Build Clue Player (Linux)
-    runs-on: ubuntu-22.04 # Standard Stable Linux
+    runs-on: ubuntu-22.04
     
     steps:
       # 1. CHECKOUT CODE
       - uses: actions/checkout@v4
 
-      # 2. INSTALL HEAVY LIBRARIES (So your laptop doesn't have to)
+      # 2. INSTALL HEAVY LIBRARIES
       - name: Install System Dependencies
         run: |
           sudo apt-get update
@@ -46,23 +46,21 @@ jobs:
           # Copy Binary
           cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
           
-          # Download Tools (yt-dlp) so user doesn't need to install them
+          # Download Tools (yt-dlp)
           wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O AppDir/usr/bin/yt-dlp
           chmod +x AppDir/usr/bin/yt-dlp
 
-          # Copy Assets (You must create these in your project!)
+          # Copy Assets
+          # NOTE: Ensure these files exist in your 'assets' folder!
           cp assets/logo.png AppDir/usr/share/icons/hicolor/512x512/apps/clue_player.png
           cp assets/clue_player.desktop AppDir/usr/share/applications/clue_player.desktop
 
-          # Use LinuxDeploy to seal the can
+          # Download LinuxDeploy
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
           
-          # Initialize AppImage
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage \
-            --desktop-file AppDir/usr/share/applications/clue_player.desktop \
-            --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/clue_player.png \
-            --executable AppDir/usr/bin/clue_player
+          # Initialize AppImage (Flattened command to prevent syntax errors)
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --desktop-file AppDir/usr/share/applications/clue_player.desktop --icon-file AppDir/usr/share/icons/hicolor/512x512/apps/clue_player.png --executable AppDir/usr/bin/clue_player
 
       # 7. UPLOAD THE RESULT
       - name: Upload Artifact
