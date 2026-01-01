@@ -1,4 +1,9 @@
-import 'package:clue_player/theme.dart';
+// ==========================================
+// FILE: ./content/content_item_card.dart
+// MODERNIZED VERSION
+// ==========================================
+
+import 'package:clue_player/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:clue_player/core/database/schema.dart';
@@ -6,8 +11,15 @@ import 'package:clue_player/core/models/media_category.dart';
 
 class ContentItemCard extends StatefulWidget {
   final MediaItem mediaItem;
+  final bool isGridView;
+  final VoidCallback? onTap;
   
-  const ContentItemCard({super.key, required this.mediaItem});
+  const ContentItemCard({
+    super.key,
+    required this.mediaItem,
+    this.isGridView = true,
+    this.onTap,
+  });
 
   @override
   State<ContentItemCard> createState() => _ContentItemCardState();
@@ -15,7 +27,6 @@ class ContentItemCard extends StatefulWidget {
 
 class _ContentItemCardState extends State<ContentItemCard> {
   bool _isHovering = false;
-  final double _progress = 0.45;
 
   @override
   Widget build(BuildContext context) {
@@ -23,123 +34,277 @@ class _ContentItemCardState extends State<ContentItemCard> {
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       child: GestureDetector(
-        onTap: () {
-          context.go('/player/${widget.mediaItem.id}');
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: kSurfaceCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _isHovering ? kPrimary.withAlpha(77) : kSurfaceCard,
+        onTap: widget.onTap ?? () => context.go('/player/${widget.mediaItem.id}'),
+        child: widget.isGridView
+            ? _buildGridViewCard()
+            : _buildListViewCard(),
+      ),
+    );
+  }
+
+  Widget _buildGridViewCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppBorderRadius.lg,
+        border: Border.all(
+          color: _isHovering
+              ? AppColors.primary.withAlpha(77)
+              : AppColors.surfaceVariant,
+        ),
+        boxShadow: _isHovering
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withAlpha(26),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(26),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+      ),
+      child: ClipRRect(
+        borderRadius: AppBorderRadius.lg,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildThumbnailSection(),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildContentInfo(),
             ),
-            boxShadow: _isHovering
-                ? [BoxShadow(color: kPrimary.withAlpha(26), blurRadius: 10)]
-                : [],
-          ),
-          child: Column(
-            children: [
-              _buildThumbnail(),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: _buildContentInfo(),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildThumbnail() {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          child: Container(
-            color: Colors.grey[900],
+  Widget _buildListViewCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppBorderRadius.lg,
+        border: Border.all(
+          color: _isHovering
+              ? AppColors.primary.withAlpha(77)
+              : AppColors.surfaceVariant,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: _buildThumbnailSection(),
+          ),
+          Expanded(
+            flex: 7,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _buildContentInfo(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThumbnailSection() {
+    final isPrivate = widget.mediaItem.category == MediaCategory.private;
+
+    return AspectRatio(
+      aspectRatio: widget.isGridView ? 16 / 9 : 4 / 3,
+      child: Stack(
+        children: [
+          // Thumbnail Image
+          Container(
+            color: AppColors.surfaceVariant,
             child: widget.mediaItem.thumbnailPath != null
                 ? Image.network(
                     widget.mediaItem.thumbnailPath!,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    height: _isGridView(context) ? 160 : 120,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.image_not_supported, color: Colors.grey),
-                    ),
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) => const _ThumbnailPlaceholder(),
                   )
-                : const Center(
-                    child: Icon(Icons.movie, size: 48, color: Colors.grey),
+                : const _ThumbnailPlaceholder(),
+          ),
+
+          // Private Overlay
+          if (isPrivate)
+            Container(
+              color: Colors.black.withAlpha(153),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.lock, color: Colors.white, size: 32),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Private',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Category Badge
+          Positioned(
+            top: 12,
+            left: 12,
+            child: _buildCategoryBadge(),
+          ),
+
+          // Duration Badge
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(179),
+                borderRadius: AppBorderRadius.sm,
+              ),
+              child: Text(
+                _formatDuration(widget.mediaItem.durationSeconds),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+
+          // Hover Overlay
+          if (_isHovering && !isPrivate)
+            Container(
+              color: Colors.black.withAlpha(77),
+              child: Center(
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(230),
+                    shape: BoxShape.circle,
                   ),
-          ),
-        ),
-        if (widget.mediaItem.category == MediaCategory.private)
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withAlpha(102),
-              child: const Center(
-                child: Icon(Icons.lock, size: 48, color: Colors.redAccent),
+                  child: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
+                ),
               ),
             ),
-          ),
-        Positioned(
-          bottom: 8,
-          right: 8,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(204),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '${widget.mediaItem.durationSeconds ~/ 60}:${(widget.mediaItem.durationSeconds % 60).toString().padLeft(2, '0')}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 8,
-          left: 8,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: _getCategoryColor(widget.mediaItem.category),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              widget.mediaItem.category.name.capitalize(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ),
-        if (_isHovering)
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withAlpha(102),
-              child: const Center(
-                child: Icon(Icons.play_circle, size: 64, color: Colors.white),
-              ),
-            ),
-          ),
-        _buildProgressBar(),
-      ],
+        ],
+      ),
     );
   }
 
-  bool _isGridView(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    return width > 600 && (width ~/ 300) > 1;
+  Widget _buildCategoryBadge() {
+    final color = _getCategoryColor(widget.mediaItem.category);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withAlpha(230),
+        borderRadius: AppBorderRadius.sm,
+      ),
+      child: Text(
+        _capitalize(widget.mediaItem.category.name),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContentInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Title and Menu
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.mediaItem.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.onBackground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: widget.isGridView ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Lofi Productions • ${_formatDate(widget.mediaItem.encryptedAt)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.more_vert),
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
+
+        // Description
+        if (widget.isGridView && widget.mediaItem.description != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 12),
+            child: Text(
+              widget.mediaItem.description!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.onSurfaceVariant,
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+        // Metadata and Actions
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${(widget.mediaItem.encryptedSize / 1000000).toStringAsFixed(1)} MB',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+            FilledButton.tonal(
+              onPressed: () {},
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                minimumSize: const Size(0, 36),
+              ),
+              child: const Text('Download'),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Color _getCategoryColor(MediaCategory category) {
@@ -150,111 +315,51 @@ class _ContentItemCardState extends State<ContentItemCard> {
         return Colors.purple;
       case MediaCategory.private:
         return Colors.red;
-      }
+    }
   }
 
-  Widget _buildProgressBar() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        height: 4,
-        width: double.infinity,
-        color: Colors.grey[800],
-        child: FractionallySizedBox(
-          widthFactor: _progress,
-          heightFactor: 1.0,
-          child: Container(
-            color: kPrimary,
-          ),
-        ),
-      ),
-    );
+  String _capitalize(String text) {
+    if (text.isEmpty) return '';
+    return text[0].toUpperCase() + text.substring(1);
   }
 
-  Widget _buildContentInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                widget.mediaItem.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: _isHovering ? kPrimary : Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.verified_user, color: Colors.green, size: 18),
-          ],
-        ),
-        const SizedBox(height: 8),
-        if (_isGridView(context))
-          Text(
-            widget.mediaItem.description ?? 'A soothing collection of beats perfect for late night coding sessions or winding down.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: kTextSecondary,
-              height: 1.4,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${widget.mediaItem.encryptedSize ~/ 1000000} MB',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: kTextSecondary,
-              ),
-            ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.info, size: 20, color: Colors.white),
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                    shadowColor: Colors.transparent,
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.download, size: 16),
-                      SizedBox(width: 4),
-                      Text('Download', style: TextStyle(fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
+  String _formatDuration(int seconds) {
+    final duration = Duration(seconds: seconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final secs = duration.inSeconds.remainder(60);
+
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    }
+    return '${minutes}m ${secs}s';
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()} years ago';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()} months ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} days ago';
+    }
+    return 'Today';
   }
 }
 
-extension on String {
-  String capitalize() {
-    return "${this[0].toUpperCase()}${substring(1)}";
+class _ThumbnailPlaceholder extends StatelessWidget {
+  const _ThumbnailPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surfaceVariant,
+      child: const Center(
+        child: Icon(Icons.videocam_off, color: AppColors.onSurfaceVariant, size: 48),
+      ),
+    );
   }
 }

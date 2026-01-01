@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+export 'package:clue_player/theme.dart'; // For kPrimary, kBackgroundDark, etc.
 
 // ==========================================
 // GREYWAY.Co COLOR SYSTEM
@@ -199,13 +200,10 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
     tertiary: AppColors.surfaceVariant,
     onTertiary: AppColors.onSurface,
     
-    background: AppColors.background,
-    onBackground: AppColors.onBackground,
-    
     surface: AppColors.surface,
     onSurface: AppColors.onSurface,
     
-    surfaceVariant: AppColors.surfaceVariant,
+    surfaceContainerHighest: AppColors.surfaceVariant,
     onSurfaceVariant: AppColors.onSurfaceVariant,
     
     error: AppColors.error,

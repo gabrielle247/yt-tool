@@ -1,9 +1,42 @@
+import 'package:clue_player/core/providers/scraper_providers.dart';
 import 'package:clue_player/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool? _toolsAvailable;
+  // ignore: unused_field
+  bool _isCheckingTools = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkTools();
+  }
+
+  Future<void> _checkTools() async {
+    setState(() => _isCheckingTools = true);
+    try {
+      final scraper = ref.read(mediaScraperServiceProvider);
+      final result = await scraper.verifyTools();
+      setState(() {
+        _toolsAvailable = result;
+        _isCheckingTools = false;
+      });
+    } catch (e) {
+      setState(() {
+        _toolsAvailable = false;
+        _isCheckingTools = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +99,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             Text(
               'Settings & Support',
-              style: Theme.of(context as BuildContext)
-                  .textTheme
-                  .displayMedium
-                  ?.copyWith(
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
@@ -77,10 +107,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Manage your app preferences and get help.',
-              style: Theme.of(context as BuildContext)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: kTextSecondary,
                   ),
             ),
@@ -116,10 +143,7 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   'App Preferences',
-                  style: Theme.of(context as BuildContext)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -127,8 +151,10 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
+            _buildToolsStatus(),
+            const SizedBox(height: 24),
             _buildSettingRow(
-              context as BuildContext,
+              context,
               'Playback Quality',
               'Choose your default streaming resolution. Higher quality uses more data.',
               child: DropdownButton<String>(
@@ -148,10 +174,7 @@ class SettingsScreen extends StatelessWidget {
                 ],
                 onChanged: (value) {},
                 underline: Container(),
-                style: Theme.of(context as BuildContext)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.white,
                     ),
                 dropdownColor: kSurfaceDark,
@@ -160,7 +183,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildSettingRow(
-              context as BuildContext,
+              context,
               'Vault Location',
               'Local path where your private content is encrypted and stored.',
               child: Row(
@@ -181,7 +204,7 @@ class SettingsScreen extends StatelessWidget {
                           const SizedBox(width: 10),
                           Text(
                             '/Users/CluePlayer/LocalVault',
-                            style: Theme.of(context as BuildContext)
+                            style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(
@@ -225,10 +248,7 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     'Local write permission active',
-                    style: Theme.of(context as BuildContext)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
                         ),
@@ -271,10 +291,7 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   'Privacy & Local Storage Policy',
-                  style: Theme.of(context as BuildContext)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -284,10 +301,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'Clue Player is built on a Local-First Architecture. We are committed to ensuring your digital footprint remains exclusively yours. Unlike traditional streaming platforms, we do not centralize your data.',
-              style: Theme.of(context as BuildContext)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: kTextSecondary,
                     height: 1.5,
                   ),
@@ -320,7 +334,7 @@ class SettingsScreen extends StatelessWidget {
                             const SizedBox(width: 12),
                             Text(
                               'Zero Cloud Tracking',
-                              style: Theme.of(context as BuildContext)
+                              style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
                                   ?.copyWith(
@@ -333,12 +347,10 @@ class SettingsScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           'Your viewing history and behavioral data are never uploaded to our servers.',
-                          style: Theme.of(context as BuildContext)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: kTextSecondary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: kTextSecondary,
+                                  ),
                         ),
                       ],
                     ),
@@ -370,7 +382,7 @@ class SettingsScreen extends StatelessWidget {
                             const SizedBox(width: 12),
                             Text(
                               'Client-Side Encryption',
-                              style: Theme.of(context as BuildContext)
+                              style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
                                   ?.copyWith(
@@ -383,12 +395,10 @@ class SettingsScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           'All downloaded content is encrypted at rest on your device\'s hard drive.',
-                          style: Theme.of(context as BuildContext)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: kTextSecondary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: kTextSecondary,
+                                  ),
                         ),
                       ],
                     ),
@@ -411,10 +421,7 @@ class SettingsScreen extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'You have full ownership of your local vault data.',
-                      style: Theme.of(context as BuildContext)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -424,10 +431,7 @@ class SettingsScreen extends StatelessWidget {
                     onPressed: () {},
                     child: Text(
                       'Read Full Policy',
-                      style: Theme.of(context as BuildContext)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: kPrimary,
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
@@ -474,13 +478,11 @@ class SettingsScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           'Contact Support',
-                          style: Theme.of(context as BuildContext)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ],
                     ),
@@ -541,14 +543,12 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Direct Channels',
-                          style: Theme.of(context as BuildContext)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                color: kTextSecondary,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: kTextSecondary,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
                         ),
                         const SizedBox(height: 16),
                         _buildContactCard(
@@ -583,25 +583,21 @@ class SettingsScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Text(
                           'Join the Community',
-                          style: Theme.of(context as BuildContext)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Connect with other Clue Player users, share setups, and get instant help on our Discord server.',
-                          style: Theme.of(context as BuildContext)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: Colors.white70,
-                                height: 1.5,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white70,
+                                    height: 1.5,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -642,11 +638,75 @@ class SettingsScreen extends StatelessWidget {
         child: Text(
           'Clue Player v2.4.0 • Built for Privacy',
           textAlign: TextAlign.center,
-          style:
-              Theme.of(context as BuildContext).textTheme.bodySmall?.copyWith(
-                    color: kTextSecondary,
-                  ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: kTextSecondary,
+              ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildToolsStatus() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: (_toolsAvailable ?? false)
+            ? Colors.green.withOpacity(0.1)
+            : Colors.orange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: (_toolsAvailable ?? false) ? Colors.green : Colors.orange,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                (_toolsAvailable ?? false) ? Icons.check_circle : Icons.warning,
+                color:
+                    (_toolsAvailable ?? false) ? Colors.green : Colors.orange,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Download Tools',
+                style: TextStyle(
+                  color:
+                      (_toolsAvailable ?? false) ? Colors.green : Colors.orange,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: _checkTools,
+                child: const Text('Recheck'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            (_toolsAvailable ?? false)
+                ? 'yt-dlp and ffmpeg are installed and ready'
+                : 'Required tools not found. Please install yt-dlp and ffmpeg.',
+            style: const TextStyle(
+              color: kTextSecondary,
+              fontSize: 14,
+            ),
+          ),
+          if (!(_toolsAvailable ?? false)) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'Install with: sudo apt install yt-dlp ffmpeg',
+              style: TextStyle(
+                color: Colors.orange,
+                fontSize: 12,
+                fontFamily: 'monospace',
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -683,11 +743,10 @@ class SettingsScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style:
-              Theme.of(context as BuildContext).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -698,19 +757,13 @@ class SettingsScreen extends StatelessWidget {
             border: Border.all(color: kSurfaceCard),
           ),
           child: TextField(
-            style: Theme.of(context as BuildContext)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.white,
                 ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: Theme.of(context as BuildContext)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
-                    color: kTextSecondary.withAlpha(128 ),
+              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: kTextSecondary.withAlpha(128),
                   ),
               border: InputBorder.none,
             ),
@@ -726,11 +779,10 @@ class SettingsScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style:
-              Theme.of(context as BuildContext).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -747,10 +799,7 @@ class SettingsScreen extends StatelessWidget {
                 value: value,
                 child: Text(
                   value,
-                  style: Theme.of(context as BuildContext)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                       ),
                 ),
@@ -758,10 +807,7 @@ class SettingsScreen extends StatelessWidget {
             }).toList(),
             onChanged: (value) {},
             underline: Container(),
-            style: Theme.of(context as BuildContext)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.white,
                 ),
             dropdownColor: kSurfaceDark,
@@ -779,11 +825,10 @@ class SettingsScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style:
-              Theme.of(context as BuildContext).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -795,18 +840,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           child: TextField(
             maxLines: 5,
-            style: Theme.of(context as BuildContext)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.white,
                 ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: Theme.of(context as BuildContext)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
+              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: kTextSecondary.withAlpha(128),
                   ),
               border: InputBorder.none,
@@ -845,10 +884,7 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context as BuildContext)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: kTextSecondary,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
@@ -857,10 +893,7 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   email,
-                  style: Theme.of(context as BuildContext)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),

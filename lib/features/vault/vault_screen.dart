@@ -1,25 +1,28 @@
 import 'package:clue_player/core/database/schema.dart';
+import 'package:clue_player/core/models/media_category.dart';
+import 'package:clue_player/core/providers/media_providers.dart';
+import 'package:clue_player/core/utils/string_extensions.dart';
+import 'package:clue_player/features/import/add_video_dialog.dart';
 import 'package:clue_player/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:clue_player/core/services/data_repository.dart';
-import 'package:clue_player/core/models/media_category.dart';
 
-class VaultScreen extends StatefulWidget {
+class VaultScreen extends ConsumerStatefulWidget {
   const VaultScreen({super.key});
 
   @override
-  State<VaultScreen> createState() => _VaultScreenState();
+  ConsumerState<VaultScreen> createState() => _VaultScreenState();
 }
 
-class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin {
+class _VaultScreenState extends ConsumerState<VaultScreen>
+    with TickerProviderStateMixin {
   int _activeFilter = 0;
   int _activeSort = 0;
   bool _isGridView = true;
   bool _isHovering = false;
   late TabController _tabController;
-  
+
   bool? get isDownloaded => null;
 
   @override
@@ -49,6 +52,17 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             _buildContentGrid(),
           ],
         ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => const AddVideoDialog(),
+            );
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Import Video'),
+          backgroundColor: kPrimary,
+        ),
       ),
     );
   }
@@ -70,7 +84,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
               _isGridView = !_isGridView;
             });
           },
-          icon: Icon(_isGridView ? Icons.grid_view : Icons.list, color: Colors.white),
+          icon: Icon(_isGridView ? Icons.grid_view : Icons.list,
+              color: Colors.white),
         ),
         IconButton(
           onPressed: () {},
@@ -105,9 +120,9 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                 Text(
                   'My Downloads',
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -115,8 +130,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             Text(
               'Manage your secure offline content and subscriptions.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: kTextSecondary,
-              ),
+                    color: kTextSecondary,
+                  ),
             ),
           ],
         ),
@@ -149,10 +164,11 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                       const SizedBox(width: 8),
                       Text(
                         'Vault Storage',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                     ],
                   ),
@@ -160,8 +176,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                   Text(
                     '12GB / 50GB',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: kTextSecondary,
-                    ),
+                          color: kTextSecondary,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -222,10 +238,14 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _buildFilterChip(Icons.grid_view, 'All', 0, isActive: _activeFilter == 0),
-                  _buildFilterChip(Icons.school, 'Learning', 1, isActive: _activeFilter == 1),
-                  _buildFilterChip(Icons.weekend, 'Chilling', 2, isActive: _activeFilter == 2),
-                  _buildFilterChip(Icons.lock, 'Private', 3, isActive: _activeFilter == 3),
+                  _buildFilterChip(Icons.grid_view, 'All', 0,
+                      isActive: _activeFilter == 0),
+                  _buildFilterChip(Icons.school, 'Learning', 1,
+                      isActive: _activeFilter == 1),
+                  _buildFilterChip(Icons.weekend, 'Chilling', 2,
+                      isActive: _activeFilter == 2),
+                  _buildFilterChip(Icons.lock, 'Private', 3,
+                      isActive: _activeFilter == 3),
                 ],
               ),
             ),
@@ -236,8 +256,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                 Text(
                   'Sort by:',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: kTextSecondary,
-                  ),
+                        color: kTextSecondary,
+                      ),
                 ),
                 const SizedBox(width: 8),
                 DropdownButton<int>(
@@ -254,8 +274,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                   ],
                   underline: Container(),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                  ),
+                        color: Colors.white,
+                      ),
                   dropdownColor: kSurfaceDark,
                   iconEnabledColor: Colors.white,
                 ),
@@ -272,7 +292,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildFilterChip(IconData icon, String label, int value, {required bool isActive}) {
+  Widget _buildFilterChip(IconData icon, String label, int value,
+      {required bool isActive}) {
     return Padding(
       padding: const EdgeInsets.only(right: 10),
       child: ElevatedButton(
@@ -298,9 +319,9 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                fontSize: 14,
-              ),
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 14,
+                  ),
             ),
           ],
         ),
@@ -309,61 +330,67 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
   }
 
   Widget _buildContentGrid() {
-    return Consumer<DataRepository>(
-      builder: (context, repository, child) {
-        return StreamBuilder<List<MediaItem>>(
-          stream: repository.watchAllMedia(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SliverToBoxAdapter(
-                child: Center(child: CircularProgressIndicator(color: kPrimary)),
-              );
-            }
-            
-            final items = snapshot.data ?? [];
-            final activeItems = items.where((item) => 
-              _activeFilter == 0 || 
-              (_activeFilter == 1 && item.category == MediaCategory.learning) ||
-              (_activeFilter == 2 && item.category == MediaCategory.chilling) ||
-              (_activeFilter == 3 && item.category == MediaCategory.private)
-            ).toList();
-            
-            if (activeItems.isEmpty) {
-              return const SliverFillRemaining(
-                child: Center(
-                  child: Text('No content available', style: TextStyle(color: Colors.white54)),
-                ),
-              );
-            }
-            
-            return SliverPadding(
-              padding: const EdgeInsets.all(16.0),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: _isGridView ? (MediaQuery.of(context).size.width ~/ 300) : 1,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: _isGridView ? 0.7 : 2.0,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index >= activeItems.length) return null;
-                    return _buildVaultCard(activeItems[index]);
-                  },
-                  childCount: activeItems.length,
-                ),
-              ),
-            );
-          },
+    final mediaStream = ref.watch(watchAllMediaProvider);
+
+    return mediaStream.when(
+      data: (items) {
+        final mediaItems = items.cast<MediaItem>();
+        final activeItems = mediaItems
+            .where((item) =>
+                _activeFilter == 0 ||
+                (_activeFilter == 1 &&
+                    item.category == MediaCategory.learning) ||
+                (_activeFilter == 2 &&
+                    item.category == MediaCategory.chilling) ||
+                (_activeFilter == 3 && item.category == MediaCategory.private))
+            .toList();
+
+        if (activeItems.isEmpty) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: Text('No content available',
+                  style: TextStyle(color: Colors.white54)),
+            ),
+          );
+        }
+
+        return SliverPadding(
+          padding: const EdgeInsets.all(16.0),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  _isGridView ? (MediaQuery.of(context).size.width ~/ 300) : 1,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              childAspectRatio: _isGridView ? 0.7 : 2.0,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index >= activeItems.length) return null;
+                return _buildVaultCard(activeItems[index]);
+              },
+              childCount: activeItems.length,
+            ),
+          ),
         );
       },
+      loading: () => const SliverToBoxAdapter(
+        child: Center(child: CircularProgressIndicator(color: kPrimary)),
+      ),
+      error: (error, stack) => SliverFillRemaining(
+        child: Center(
+          child:
+              Text('Error: $error', style: const TextStyle(color: Colors.red)),
+        ),
+      ),
     );
   }
 
   Widget _buildVaultCard(MediaItem mediaItem) {
-    const isExpired = false; // In a real app, this would be based on expiration date
+    const isExpired =
+        false; // In a real app, this would be based on expiration date
     final isExpiringSoon = mediaItem.title.contains('System'); // Demo data
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
@@ -376,8 +403,11 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             color: kSurfaceCard,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isExpiringSoon ? Colors.red : 
-                     _isHovering ? kPrimary.withAlpha(128) : kSurfaceCard,
+              color: isExpiringSoon
+                  ? Colors.red
+                  : _isHovering
+                      ? kPrimary.withAlpha(128)
+                      : kSurfaceCard,
             ),
             boxShadow: _isHovering
                 ? [BoxShadow(color: kPrimary.withAlpha(51), blurRadius: 10)]
@@ -399,7 +429,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildThumbnailSection(MediaItem mediaItem, bool isExpired, bool isExpiringSoon) {
+  Widget _buildThumbnailSection(
+      MediaItem mediaItem, bool isExpired, bool isExpiringSoon) {
     return Stack(
       children: [
         ClipRRect(
@@ -413,7 +444,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                     width: double.infinity,
                     height: _isGridView ? 180 : 140,
                     errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.image_not_supported, color: Colors.grey),
+                      child:
+                          Icon(Icons.image_not_supported, color: Colors.grey),
                     ),
                   )
                 : const Center(
@@ -469,12 +501,9 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             ),
           ),
         ),
-        if (isExpired)
-          _buildExpiredOverlay(),
-        if (isExpiringSoon)
-          _buildExpiringOverlay(),
-        if (isDownloaded! && !_isGridView)
-          _buildDownloadBadge(),
+        if (isExpired) _buildExpiredOverlay(),
+        if (isExpiringSoon) _buildExpiringOverlay(),
+        if (isDownloaded! && !_isGridView) _buildDownloadBadge(),
         if (_isHovering)
           Positioned.fill(
             child: Container(
@@ -484,8 +513,7 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
               ),
             ),
           ),
-        if (_isGridView && !isExpired)
-          _buildProgressBar(),
+        if (_isGridView && !isExpired) _buildProgressBar(),
       ],
     );
   }
@@ -502,16 +530,17 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             Text(
               'Expired',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: kPrimary,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -617,7 +646,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildContentInfo(MediaItem mediaItem, bool isExpired, bool isExpiringSoon) {
+  Widget _buildContentInfo(
+      MediaItem mediaItem, bool isExpired, bool isExpiringSoon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -628,9 +658,9 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
               child: Text(
                 mediaItem.title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: _isHovering ? kPrimary : Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: _isHovering ? kPrimary : Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -638,7 +668,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             if (!isExpired)
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.more_vert, size: 20, color: Colors.white),
+                icon:
+                    const Icon(Icons.more_vert, size: 20, color: Colors.white),
                 padding: EdgeInsets.zero,
                 visualDensity: VisualDensity.compact,
               ),
@@ -647,11 +678,12 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
         const SizedBox(height: 8),
         if (_isGridView)
           Text(
-            mediaItem.description ?? 'A soothing collection of beats perfect for late night coding sessions or winding down.',
+            mediaItem.description ??
+                'A soothing collection of beats perfect for late night coding sessions or winding down.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: kTextSecondary,
-              height: 1.4,
-            ),
+                  color: kTextSecondary,
+                  height: 1.4,
+                ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -662,8 +694,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
             Text(
               '${mediaItem.encryptedSize ~/ 1000000} MB',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: kTextSecondary,
-              ),
+                    color: kTextSecondary,
+                  ),
             ),
             Row(
               children: [
@@ -679,7 +711,8 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kPrimary,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -711,13 +744,5 @@ class _VaultScreenState extends State<VaultScreen> with TickerProviderStateMixin
       case MediaCategory.private:
         return Colors.red;
     }
-  }
-
-}
-
-extension on String {
-  String capitalize() {
-    if (isEmpty) return '';
-    return this[0].toUpperCase() + substring(1);
   }
 }

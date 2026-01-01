@@ -16,15 +16,13 @@ final ThemeData cluePlayerTheme = ThemeData.dark().copyWith(
   // Use colors from the new AppColors class for consistency
   scaffoldBackgroundColor: AppColors.background,
   primaryColor: AppColors.primary,
-  colorScheme: ColorScheme.dark(
+  colorScheme: const ColorScheme.dark(
     primary: AppColors.primary,
     onPrimary: AppColors.onPrimary,
     secondary: AppColors.primaryLight,
     onSecondary: AppColors.onPrimary,
     surface: AppColors.surface,
     onSurface: AppColors.onSurface,
-    background: AppColors.background,
-    onBackground: AppColors.onBackground,
     error: AppColors.error,
     onError: AppColors.onPrimary,
     brightness: Brightness.dark,
